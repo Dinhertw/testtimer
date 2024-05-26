@@ -1,0 +1,27 @@
+<style>
+    .weather-widget-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        padding: 10px;
+        z-index: 9999;
+	    background-color: #000000; 
+        width: 250px; /* 設定框架最大寬度 */
+        height: 150px; /* 設定框架最大高度 */
+    }
+	
+	body{
+        max-width: 250px; /* 設定框架最大寬度 */
+        max-height: 150px; /* 設定框架最大高度 */
+	}
+	
+</style>
+
+<body>
+<div class="weather-widget-container">
+   <a class="weatherwidget-io" href="https://forecast7.com/zh-tw/24d05120d52/changhua-county/" data-label_1="彰化市" data-label_2="天氣" data-font="Noto Sans TC" data-icons="Climacons Animated" data-mode="Current" data-theme="dark" >彰化市 天氣</a>
+<script>
+!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
+</script>
+</div>
+</body>
