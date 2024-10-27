@@ -84,6 +84,7 @@
             } else {
                 console.error("載入事件資料失敗:", response.statusText);
                 alert("無法載入事件資料，請檢查 GitHub 設定或檔案存在性。");
+		alert(`Error: ${error.message}`);
             }
         } catch (error) {
             console.error("載入事件資料時發生錯誤:", error);
