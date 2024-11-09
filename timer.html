@@ -33,31 +33,22 @@
 <body>
 
 <script>
-    // 設定倒數計時
-    function setupCountdown(targetElementId, endDate, endTime, eventDescription) {
-        // 將結束日期和時間合併為一個字串，例如：YYYY/MM/DD HH:mm
-        var endDateWithTime = endDate + ' ' + endTime;
+<script>
+    // Set up countdown timer
+    function setupCountdown(targetElementId, eventDate, eventDescription) {
+        // Get event timestamp
+        var countDownDate = new Date(eventDate).getTime();
 
-        // 取得結束日期的時間戳
-        var countDownDate = new Date(endDateWithTime).getTime();
-
-        // 啟動倒數更新
+        // Start countdown update
         var x = setInterval(function() {
-            // 取得當前時間
             var now = new Date().getTime();
-            // 計算距離結束日期的時間差
             var distance = countDownDate - now;
-            // 計算天數、小時數、分鐘數、秒數
-            var days = Math.floor(distance / (1000 * 60 * 60 * 24));
             var days1 = Math.floor(distance / (1000 * 60 * 60 * 24) + 1);
-            var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            var seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-            // 顯示剩餘時間和事件描述
+            // Display remaining time and event description
             document.getElementById(targetElementId).innerHTML = "距離" + eventDescription + "還剩" + days1 + "天";
 
-            // 如果倒數結束，清除定時器
+            // Clear interval if countdown ends
             if (distance < 0) {
                 clearInterval(x);
                 document.getElementById(targetElementId).innerHTML = "";
@@ -65,22 +56,23 @@
         }, 50); 
     }
 
-    // 讀取事件資料
+    // Load event data
     async function loadEvents() {
         try {
             const response = await fetch('event.json');
-            if (!response.ok) throw new Error('網絡響應不正常');
+            if (!response.ok) throw new Error('Network response was not ok');
             const events = await response.json();
             events.forEach((event, index) => {
-                setupCountdown(`countdown${index + 1}`, event.endDate, event.endTime, event.eventDescription);
+                setupCountdown(`countdown${index + 1}`, event.eventDate, event.eventName);
             });
         } catch (error) {
-            console.error('載入事件資料時發生錯誤:', error);
+            console.error('Error loading event data:', error);
         }
     }
 
-    // 載入事件資料
+    // Load events on page load
     loadEvents();
+</script>
 
 </script>
 
