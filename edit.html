@@ -69,27 +69,30 @@
     const repo = "testtimer"; // 儲存庫名稱
     const filePath = "event.json"; // 儲存於儲存庫的文件路徑
 
-    async function loadEventData() {
-        try {
-            const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`, // 注意此處可能使用 `Bearer` 格式
-                    Accept: "application/vnd.github+json",
-                },
-            });
-            if (response.ok) {
-                const data = await response.json();
-                const content = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-                populateEventTable(content);
-            } else {
-                console.error("載入事件資料失敗:", response.statusText);
-                alert("無法載入事件資料，請檢查 GitHub 設定或檔案存在性。");
-            }
-        } catch (error) {
-            console.error("載入事件資料時發生錯誤:", error);
-            alert("載入事件資料時發生錯誤，請檢查控制台以獲取詳細資訊。");
+async function loadEventData() {
+    try {
+        const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`, {
+            headers: {
+                Authorization: `Bearer ${token}`, // 使用 Fine-grained token
+                Accept: "application/vnd.github+json",
+            },
+        });
+        console.log("Response status:", response.status); // 顯示回應狀態碼
+        if (response.ok) {
+            const data = await response.json();
+            const content = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+            populateEventTable(content);
+        } else {
+            const error = await response.json();
+            console.error("載入事件資料失敗:", response.status, error.message); // 顯示錯誤訊息
+            alert(`無法載入事件資料，錯誤: ${error.message}`);
         }
+    } catch (error) {
+        console.error("載入事件資料時發生錯誤:", error);
+        alert("載入事件資料時發生錯誤，請檢查控制台以獲取詳細資訊。");
     }
+}
+
 
     function populateEventTable(events) {
         const tableBody = document.getElementById("eventTable").getElementsByTagName("tbody")[0];
