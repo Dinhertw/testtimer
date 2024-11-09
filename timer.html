@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countdown Page</title>
     <style>
         body {
             font-family: sans-serif;
@@ -15,40 +17,32 @@
         }
         .footer-text {
             font-size: 10px;
-            position: fixed; /* 使元素固定定位 */
-            right: -3px; /* 距離右邊10px */
-            bottom: -3px; /* 距離底部10px */
-            color: #fff; /* 文字顏色白色 */
-            padding: 10px; /* 內邊距10px */
-            opacity: 0.1; /* 文字透明度，取值範圍0-1 */
+            position: fixed;
+            right: -3px;
+            bottom: -3px;
+            color: #fff;
+            padding: 10px;
+            opacity: 0.1;
         }
         h1 {
-            font-family: sans-serif;
             font-size: 40px;
             margin-top: 20px;
         }
     </style>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 
 <script>
-<script>
     // Set up countdown timer
     function setupCountdown(targetElementId, eventDate, eventDescription) {
-        // Get event timestamp
         var countDownDate = new Date(eventDate).getTime();
-
-        // Start countdown update
         var x = setInterval(function() {
             var now = new Date().getTime();
             var distance = countDownDate - now;
             var days1 = Math.floor(distance / (1000 * 60 * 60 * 24) + 1);
 
-            // Display remaining time and event description
             document.getElementById(targetElementId).innerHTML = "距離" + eventDescription + "還剩" + days1 + "天";
 
-            // Clear interval if countdown ends
             if (distance < 0) {
                 clearInterval(x);
                 document.getElementById(targetElementId).innerHTML = "";
@@ -70,21 +64,18 @@
         }
     }
 
-    // Load events on page load
     loadEvents();
 </script>
 
-</script>
-
-<!-- 倒數計時 -->
-<div id="countdown1" class="countdown"></div><br>
-<div id="countdown2" class="countdown"></div><br>
-<div id="countdown3" class="countdown"></div><br>
-<div id="countdown4" class="countdown"></div><br>
+<!-- Countdown displays -->
+<div id="countdown1" class="countdown"></div>
+<div id="countdown2" class="countdown"></div>
+<div id="countdown3" class="countdown"></div>
+<div id="countdown4" class="countdown"></div>
 
 <hr size="0.3px" align="center" width="75%">
 <h1>親愛的103小朋友</h1>
 <h1>上課時請專心聽課，上課勿聊天，勿走動~</h1>
 
 </body> 
-</html> 
+</html>
