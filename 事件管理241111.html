@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"></link>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>事件管理</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #1a1a1d;
+        color: #c5c6c7;
+        margin: 0;
+        padding: 20px;
+        line-height: 1.6;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    h1 {
+        text-align: center;
+        color: #fd6262;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 10px;
+        margin: 20px 0;
+        background: #444;
+        border-radius: 12px;
+        overflow: hidden;
+		padding: 10px;
+    }
+
+    th, td {
+        padding: 15px;
+        text-align: center;
+        color: #ffffff;
+        background-color: rgba(50, 50, 50, 0.8);
+    }
+
+    th {
+        font-size: 18px;
+        font-weight: bold;
+        background-color: #555;
+    }
+
+    tbody tr:nth-child td {
+        background-color: rgba(50, 50, 50, 0.8);
+    }
+
+    td:first-child {
+        border-top-left-radius: 10px;
+        border-bottom-left-radius: 10px;
+    }
+
+    td:last-child {
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+    }
+
+    input[type="text"], input[type="datetime-local"] {
+        font-family: Arial, sans-serif;
+        width: 90%;
+        padding: 10px;
+        margin-top: 5px;
+        border: 1px solid #c5c6c7;
+        border-radius: 8px;
+        background-color: #333;
+        color: #f0f0f0;
+        font-size: 16px;
+        animation: slideIn 1.5s ease-out forwards;
+        transition: border-color 0.3s ease;
+    }
+
+    input[type="text"]:hover, input[type="datetime-local"]:hover, input[type="text"]:focus, input[type="datetime-local"]:focus {
+        border-color: #fd6262;
+		outline: none;
+    }
+
+    .button {
+        background-color: #fd6262;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 5px;
+        width: 90%;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .button:hover {
+        background-color: #ff7b7b;
+        transform: scale(1.02);
+    }
+
+    .button:active {
+        background-color: #ff7b7b;
+        transform: scale(0.98);
+    }
+</style>
+
+</head>
+<body>
+    <h1>螢幕保護時鐘&nbsp;事件管理</h1>
+
+		<table id="eventTable">
+			<thead>
+				<tr>
+					<th>事件名稱</th>
+					<th>事件日期</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+			
+			<tbody>
+            <!-- 事件資料將動態填充到這裡 -->
+
+			</tbody>
+
+		</table>
+		<button class="button" id="addEventButton">新增事件</button>
+		<button class="button" id="removeExpiredButton">刪除過期事件</button>
+	<br>
+    <button class="button" id="saveButton">保存所有事件</button>
+	<br><br>
+
+	<h2>※更改後請記得保存，過期的事件可透過"刪除過期事件"按鈕刪除</h2><br><br><br>
+	<h2>此頁面應避免外流，有資安問題。</h2>
+	<h2>2024.11.10版</h2>
+	
+	
+<script>
+
+    const token = "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"; // Fine-grained GitHub Token
+    const owner = "Dinhertw"; // GitHub 使用者名稱
+    const repo = "testtimer"; // 儲存庫名稱
+    const filePath = "event.json"; // 儲存於儲存庫的文件路徑
+
+
+async function loadEventData() {
+    try {
+			Swal.fire({
+				title: "事件資料載入中...",	
+				timerProgressBar: true,
+				allowOutsideClick: false,
+				didOpen: () => {
+					Swal.showLoading();
+				}
+			});
+		
+        const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`, {
+            headers: {
+				Authorization: `Bearer ${token}`, // 使用 Bearer 格式
+				Accept: "application/vnd.github+json",
+            },
+        });
+        console.log("Response status:", response.status); // 顯示回應狀態碼
+        if (response.ok) {
+            const data = await response.json();
+            const content = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+            populateEventTable(content);
+			Swal.fire({
+				toast: true,
+				position: "top-end",
+				showConfirmButton: false,
+				timer: 3000,
+				timerProgressBar: true,
+				icon: "success",
+				title: "載入事件資料成功"
+			});
+        } else {
+            const error = await response.json();
+            console.error("載入事件資料失敗:", response.status, error.message); // 顯示錯誤訊息
+            alert(`無法載入事件資料，錯誤: ${error.message}`);
+			Swal.fire({
+				icon: 'error',
+				title: '無法載入事件資料，錯誤: ${error.message}',
+				confirmButtonText: '確認'
+			});
+        }
+    } catch (error) {
+        console.error("載入事件資料時發生錯誤:", error);
+		Swal.fire({
+			icon: 'error',
+			title: '載入事件資料時發生錯誤，請檢查控制台以獲取詳細資訊。',
+			confirmButtonText: '確認'
+		});
+    }
+}
+
+
+    function populateEventTable(events) {
+        const tableBody = document.getElementById("eventTable").getElementsByTagName("tbody")[0];
+        tableBody.innerHTML = "";  // 清空現有的表格資料
+        events.forEach((event, index) => {
+            const row = tableBody.insertRow();
+            row.insertCell(0).innerHTML = `<input type="text" value="${event.eventName || ''}" />`;
+            row.insertCell(1).innerHTML = `<input type="datetime-local" value="${event.eventDate || ''}" />`;
+            row.insertCell(2).innerHTML = `<button class="button" onclick="removeEvent(${index})">刪除</button>`;
+        });
+    }
+
+function addEventRow() {
+    const tableBody = document.getElementById("eventTable").getElementsByTagName("tbody")[0];
+    const row = tableBody.insertRow();
+
+    // 設定預設日期為今天，時間為 00:00
+    const today = new Date().toISOString().split('T')[0]; // 取得當天的日期（格式 YYYY-MM-DD）
+
+    row.insertCell(0).innerHTML = `<input type="text" placeholder="輸入事件名稱" />`;
+    row.insertCell(1).innerHTML = `<input type="datetime-local" value="${today}T00:00" />`;
+    row.insertCell(2).innerHTML = `<button class="button" onclick="removeEvent(${tableBody.rows.length})">刪除</button>`;
+}
+ 
+
+    function removeEvent(index) {
+        const tableBody = document.getElementById("eventTable").getElementsByTagName("tbody")[0];
+        tableBody.deleteRow(index);
+    }
+	
+
+    async function saveEvents() {
+        const tableBody = document.getElementById("eventTable").getElementsByTagName("tbody")[0];
+        const events = [];
+        for (let row of tableBody.rows) {
+            const eventName = row.cells[0].getElementsByTagName("input")[0].value;
+            const eventDate = row.cells[1].getElementsByTagName("input")[0].value;
+            events.push({ eventName, eventDate });
+        }
+
+        // Step 1: 取得檔案的 `sha` 值
+        let sha = null;
+		Swal.fire({
+			title: "保存中...",	
+			timerProgressBar: true,
+			allowOutsideClick: false,
+			didOpen: () => {
+				Swal.showLoading();
+			}
+		});
+        try {
+            const getFileResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`, // 改用 Fine-grained token
+                    Accept: "application/vnd.github+json",
+                },
+            });
+
+            if (getFileResponse.ok) {
+                const fileData = await getFileResponse.json();
+                sha = fileData.sha; // 若檔案存在，獲取 `sha`
+            } else {
+                console.error("檢查檔案存在時發生錯誤:", getFileResponse.statusText);
+            }
+        } catch (error) {
+            console.error("檢查檔案存在時發生錯誤:", error);
+        }
+
+        // Step 2: 將檔案內容轉換為 Base64
+        const base64Content = btoa(unescape(encodeURIComponent(JSON.stringify(events))));
+
+        // Step 3: 設定上傳檔案的請求
+        try {
+            const uploadResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`, {
+                method: "PUT",
+                headers: {
+                    Authorization: `Bearer ${token}`, // 改用 Fine-grained token
+                    Accept: "application/vnd.github+json",
+                },
+                body: JSON.stringify({
+                    message: sha ? "更新事件資料" : "新增事件資料", // 設定提交訊息
+                    content: base64Content, // 設定 Base64 編碼後的內容
+                    sha: sha, // 若有 `sha` 則為更新，否則為新增
+                }),
+            });
+
+            if (uploadResponse.ok) {
+				Swal.fire({
+					icon: 'success',
+					title: '資料已成功保存！',
+					text: '※更改後一段時間才會顯示在螢幕保護時鐘!',
+					confirmButtonText: '確認'
+					
+				}).then((result) => {   loadEventData()  });
+				
+
+			    
+            } else {
+                const error = await uploadResponse.json();
+                alert(`保存失敗: ${error.message}`);
+            }
+        } catch (error) {
+            console.error("上傳時發生錯誤:", error);
+			Swal.fire({
+				icon: 'error',
+				title: '保存時發生錯誤！',
+				confirmButtonText: '確認'
+			});
+        }
+    }
+
+    document.getElementById("addEventButton").addEventListener("click", addEventRow);
+    document.getElementById("saveButton").addEventListener("click", saveEvents);
+
+
+async function removeExpiredEvents() {
+    const tableBody = document.getElementById("eventTable").getElementsByTagName("tbody")[0];
+    const rows = Array.from(tableBody.rows);
+    const now = new Date();
+
+    // 從最後一列開始遍歷，以避免索引錯誤
+    for (let i = rows.length - 1; i >= 0; i--) {
+        const row = rows[i];
+        const eventDate = new Date(row.cells[1].getElementsByTagName("input")[0].value);
+        if (eventDate <= now) {
+            tableBody.deleteRow(i);
+        }
+    }
+
+    // 顯示 SweetAlert 通知
+    await Swal.fire({
+        icon: 'success',
+        title: '已刪除過期事件！',
+        text: '※保存後才會生效',
+        confirmButtonText: '確認'
+    });
+}
+
+// 事件監聽器
+document.getElementById("removeExpiredButton").addEventListener("click", removeExpiredEvents);
+
+
+
+
+
+    // 載入事件資料
+    loadEventData();
+</script>
+
+
+
+
+</body></html>
